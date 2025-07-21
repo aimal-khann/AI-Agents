@@ -1,1 +1,52 @@
+import os
+from dotenv import load_dotenv
+from agents import Agent, OpenAIChatCompletionsModel, RunConfig, Runner
+from openai import AsyncOpenAI
 
+load_dotenv()
+gemini_api_key= os.getenv("GEMINI_API_KEY")
+
+if not gemini_api_key:
+    raise ValueError("you dont have any api key")
+
+external_client = AsyncOpenAI(
+    api_key=gemini_api_key,
+    base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+)
+
+# Gemini model wrapper
+model = OpenAIChatCompletionsModel(
+    model="gemini-2.0-flash",
+    openai_client=external_client
+)
+
+# Run configuration
+config = RunConfig(
+    model=model,
+    model_provider=external_client,
+    tracing_disabled=True
+)
+
+activity_agent= Agent(
+    name= "Activity Agent",
+    instructions="you suggest best and positive activity to user based on their moods ..happy.. or ..sad.. or ..stressed.."
+)
+
+triage_agent = Agent(
+        name="Mood Triage Agent",
+    instructions=("""
+You are a mood detection agent. 
+Step 1: Detect mood from the user message — respond with: your mood is looking: happy, sad, or stressed etc.
+Step 2: If the mood is sad or stressed or happy, handoff to the Activity Agent.
+"""),
+    handoffs=[activity_agent],
+)
+user_input = input("Hello from Mood Agent: \n")
+result = Runner.run_sync(
+    triage_agent,
+    input=user_input,
+    run_config=config
+    
+)
+
+print(result.final_output)
