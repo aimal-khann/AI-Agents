@@ -29,7 +29,7 @@ config = RunConfig(
 
 activity_agent= Agent(
     name= "Activity Agent",
-    instructions="you suggest best and positive activity to user based on their moods ..happy.. or ..sad.. or ..stressed.."
+    instructions="Suggest best and positive activity to a user based on their moods ..happy.. or ..sad.. or ..stressed.."
 )
 
 triage_agent = Agent(
